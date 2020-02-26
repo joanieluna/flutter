@@ -1,72 +1,94 @@
+import 'dart:math';
+import 'dart:ui' show lerpDouble;
+
+import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_sparkline/flutter_sparkline.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-//import 'package:flutter_circular_chart/flutter_circular_chart.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  runApp(MaterialApp(home: ChartPage()));
+}
 
-class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
+class ChartPage extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Demo Graphe',
-      theme: ThemeData(
-        primaryColor: Colors.pink[200],
-      ),
-      home: MyHomePage(title: 'Exemple graphe'),
-    );
+  ChartPageState createState() => ChartPageState();
+}
+
+class ChartPageState extends State<ChartPage> {
+  int dataSet = 0;
+  AnimationController animation;
+  double startHeight;   // Strike one.
+  double currentHeight; // Strike two.
+  double endHeight;     // Strike three. Refactor.
+
+  void _incrementCounter() {
+    setState(() {
+      dataSet++;
+    });
   }
-}
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  var data = [0.0, 1.0, 1.5, 2.0, 0.0, 0.0, -0.5, -1.0, 12.0, 0.0, 0.0];
-
-  Material mychart1Items(String title) {
-    return Material(
-      color: Colors.white,
-      child: Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(1.0),
-                    child: new Sparkline(
-                      data: data,
-                      lineColor: Colors.red,
-                      pointsMode: PointsMode.all,
-                      pointSize: 10.0,
-                    ),
-                  )
-      )
-    );
+  void initData() {
+    setState(() {
+      dataSet = 0;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        
-        title: Text(widget.title),
-        actions: <Widget>[
-          IconButton(icon: Icon(
-              FontAwesomeIcons.chartLine), onPressed: () {
-            //
-          }),
-        ],
+      body: Center(
+        child: CustomPaint(
+          size: Size(200.0, 100.0),
+          painter: BarChartPainter(dataSet.toDouble()),
+        ),
       ),
-      body:
-          //Padding(
-            //padding: const EdgeInsets.all(8.0),
-           /* child:*/ mychart1Items("Sales by Month"),
-         // )
+      floatingActionButton: Padding(
+            padding: const EdgeInsets.all(0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: <Widget>[
+                FloatingActionButton(
+                 child: Icon(Icons.add),
+                 onPressed: _incrementCounter,
+                ),
+                FloatingActionButton(
+                 child: Icon(Icons.add),
+                 onPressed: _incrementCounter,
+                ),
+                FloatingActionButton(
+                  onPressed: initData,
+                  child: Icon(Icons.refresh),
+                  backgroundColor: Colors.blue,
+                )
+              ]
+            )
+      )
     );
- }
+  }
+}
+
+class BarChartPainter extends CustomPainter {
+  static const barWidth = 10.0;
+
+  BarChartPainter(this.barHeight);
+
+  final double barHeight;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.blue[400]
+      ..style = PaintingStyle.fill;
+    canvas.drawRect(
+      Rect.fromLTWH(
+        (size.width - barWidth) / 2.0,
+        size.height - barHeight,
+        barWidth,
+        barHeight,
+      ),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(BarChartPainter old) => barHeight != old.barHeight;
 }
